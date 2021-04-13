@@ -27,6 +27,11 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 				Type: "STRING",
 			},
 			BillingMode: "PAY_PER_REQUEST",
+			TableName: jsii.String("Animals"),
+			SortKey: &awsdynamodb.Attribute{
+				Name: jsii.String("Name"),
+				Type: "STRING",
+			},
 		})
 
 	env := make(map[string]*string)
@@ -40,6 +45,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 		Timeout:     awscdk.Duration_Seconds(jsii.Number(300)),
 		Runtime:     awslambda.Runtime_GO_1_X(),
 		Environment: &env,
+		FunctionName: jsii.String("CreateAnimal"),
 	})
 
 	listAnimalFunction := awslambda.NewFunction(stack, jsii.String("ListAnimalFunction"), &awslambda.FunctionProps{
@@ -48,6 +54,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 		Timeout:     awscdk.Duration_Seconds(jsii.Number(300)),
 		Runtime:     awslambda.Runtime_GO_1_X(),
 		Environment: &env,
+		FunctionName: jsii.String("ListAnimals"),
 	})
 
 	table.GrantReadData(listAnimalFunction)
