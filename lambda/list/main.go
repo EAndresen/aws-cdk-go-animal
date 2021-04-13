@@ -1,7 +1,7 @@
 package main
 
 import (
-	animal "aws-cdk-go/lambda"
+	"animals/internal/animal"
 	"fmt"
 	"os"
 

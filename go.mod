@@ -1,4 +1,4 @@
-module aws-cdk-go
+module animals
 
 go 1.16
 
