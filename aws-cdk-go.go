@@ -2,27 +2,71 @@ package main
 
 import (
 	"github.com/aws/aws-cdk-go/awscdk"
-	"github.com/aws/aws-cdk-go/awscdk/awssns"
+	"github.com/aws/aws-cdk-go/awscdk/awsappsync"
+	"github.com/aws/aws-cdk-go/awscdk/awsdynamodb"
+	"github.com/aws/aws-cdk-go/awscdk/awslambda"
 	"github.com/aws/constructs-go/constructs/v3"
 	"github.com/aws/jsii-runtime-go"
 )
 
-type AwsCdkGoStackProps struct {
+type AwsLambdaCronStackProps struct {
 	awscdk.StackProps
 }
 
-func NewAwsCdkGoStack(scope constructs.Construct, id string, props *AwsCdkGoStackProps) awscdk.Stack {
+func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaCronStackProps) awscdk.Stack {
 	var sprops awscdk.StackProps
 	if props != nil {
 		sprops = props.StackProps
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
+	table := awsdynamodb.NewTable(stack, jsii.String("AnimalTable"),
+		&awsdynamodb.TableProps{
+			PartitionKey: &awsdynamodb.Attribute{
+				Name: jsii.String("UserId"),
+				Type: "STRING",
+			},
+			BillingMode: "PAY_PER_REQUEST",
+		})
+
+	env := make(map[string]*string)
+	env["DYNAMODB_TABLE"] = table.TableName()
+	env["DYNAMODB_AWS_REGION"] = table.Env().Region
+
 	// The code that defines your stack goes here
 
-	// as an example, here's how you would define an AWS SNS topic:
-	awssns.NewTopic(stack, jsii.String("MyTopic"), &awssns.TopicProps{
-		DisplayName: jsii.String("MyCoolTopic"),
+	createAnimalFunction := awslambda.NewFunction(stack, jsii.String("CreateAnimalFunction"), &awslambda.FunctionProps{
+		Code:        awslambda.NewAssetCode(jsii.String("lambda/create"), nil),
+		Handler:     jsii.String("main"),
+		Timeout:     awscdk.Duration_Seconds(jsii.Number(300)),
+		Runtime:     awslambda.Runtime_GO_1_X(),
+		Environment: &env,
+	})
+
+	listAnimalFunction := awslambda.NewFunction(stack, jsii.String("ListAnimalFunction"), &awslambda.FunctionProps{
+		Code:        awslambda.NewAssetCode(jsii.String("lambda/list"), nil),
+		Handler:     jsii.String("main.go"),
+		Timeout:     awscdk.Duration_Seconds(jsii.Number(300)),
+		Runtime:     awslambda.Runtime_GO_1_X(),
+		Environment: &env,
+	})
+
+	table.GrantReadData(listAnimalFunction)
+	table.GrantReadWriteData(createAnimalFunction)
+
+	api := awsappsync.NewGraphqlApi(stack, jsii.String("AnimalGrapghQL"), &awsappsync.GraphqlApiProps{
+		Name:   jsii.String("animals-graphql-api"),
+		Schema: awsappsync.Schema_FromAsset(jsii.String("./graphql/schema.graphql")),
+	})
+
+	api.AddLambdaDataSource(jsii.String("ListAnimalsLambdaResolver"), listAnimalFunction, &awsappsync.DataSourceOptions{
+		Description: jsii.String("List Animals"),
+		Name:        jsii.String("ListAnimal"),
+	})
+
+	api.AddLambdaDataSource(jsii.String("CreateAnimalsLambdaResolver"), createAnimalFunction, &awsappsync.DataSourceOptions{
+		Description: jsii.String("Create Animal"),
+		Name:        jsii.String("CreateAnimal"),
 	})
 
 	return stack
@@ -31,7 +75,7 @@ func NewAwsCdkGoStack(scope constructs.Construct, id string, props *AwsCdkGoStac
 func main() {
 	app := awscdk.NewApp(nil)
 
-	NewAwsCdkGoStack(app, "AwsCdkGoStack", &AwsCdkGoStackProps{
+	NewLambdaCronStack(app, "AwsLambdaStack", &AwsLambdaCronStackProps{
 		awscdk.StackProps{
 			Env: env(),
 		},

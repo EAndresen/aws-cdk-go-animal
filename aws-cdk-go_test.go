@@ -14,7 +14,7 @@ func TestAwsCdkGoStack(t *testing.T) {
 	app := awscdk.NewApp(nil)
 
 	// WHEN
-	stack := NewAwsCdkGoStack(app, "MyStack", nil)
+	stack := NewLambdaCronStack(app, "MyStack", nil)
 
 	// THEN
 	bytes, err := json.Marshal(app.Synth(nil).GetStackArtifact(stack.ArtifactId()).Template())
@@ -23,6 +23,6 @@ func TestAwsCdkGoStack(t *testing.T) {
 	}
 
 	template := gjson.ParseBytes(bytes)
-	displayName := template.Get("Resources.MyTopic86869434.Properties.DisplayName").String()
-	assert.Equal(t, "MyCoolTopic", displayName)
+	displayName := template.Get("Resources.AnimalTableA30B0E36.Properties.BillingMode").String()
+	assert.Equal(t, "PAY_PER_REQUEST", displayName)
 }
