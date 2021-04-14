@@ -70,7 +70,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 		Name:        jsii.String("ListAnimal"),
 	})
 	listAnimalDS.CreateResolver(&awsappsync.BaseResolverProps{
-		FieldName: jsii.String("listAnimal"),
+		FieldName: jsii.String("listAnimals"),
 		TypeName:  jsii.String("Query"),
 	})
 
