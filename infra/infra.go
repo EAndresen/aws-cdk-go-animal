@@ -60,19 +60,33 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 	table.GrantReadData(listAnimalFunction)
 	table.GrantReadWriteData(createAnimalFunction)
 
-	api := awsappsync.NewGraphqlApi(stack, jsii.String("AnimalGrapghQL"), &awsappsync.GraphqlApiProps{
+	api := awsappsync.NewGraphqlApi(stack, jsii.String("AnimalGraphQL"), &awsappsync.GraphqlApiProps{
 		Name:   jsii.String("animals-graphql-api"),
 		Schema: awsappsync.Schema_FromAsset(jsii.String("graphql/schema.graphql")),
 	})
 
-	api.AddLambdaDataSource(jsii.String("ListAnimalsLambdaResolver"), listAnimalFunction, &awsappsync.DataSourceOptions{
+	listAnimalDS := api.AddLambdaDataSource(jsii.String("ListAnimalsLambdaResolver"), listAnimalFunction, &awsappsync.DataSourceOptions{
 		Description: jsii.String("List Animals"),
 		Name:        jsii.String("ListAnimal"),
 	})
+	listAnimalDS.CreateResolver(&awsappsync.BaseResolverProps{
+		FieldName: jsii.String("listAnimal"),
+		TypeName:  jsii.String("Query"),
+	})
 
-	api.AddLambdaDataSource(jsii.String("CreateAnimalsLambdaResolver"), createAnimalFunction, &awsappsync.DataSourceOptions{
+	createAnimalDS := api.AddLambdaDataSource(jsii.String("CreateAnimalsLambdaResolver"), createAnimalFunction, &awsappsync.DataSourceOptions{
 		Description: jsii.String("Create Animal"),
 		Name:        jsii.String("CreateAnimal"),
+	})
+	createAnimalDS.CreateResolver(&awsappsync.BaseResolverProps{
+		FieldName:              jsii.String("createAnimal"),
+		TypeName:               jsii.String("Mutation"),
+		RequestMappingTemplate: awsappsync.MappingTemplate_FromString(
+			jsii.String("{\n                    " +
+				"\"version\": \"2018-05-29\",\n" +
+				"\"operation\": \"Invoke\",\n" +
+				"\"payload\": $util.toJson($context.arguments)\n" +
+				"}")),
 	})
 
 	return stack
