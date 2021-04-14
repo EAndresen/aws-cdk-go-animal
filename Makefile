@@ -5,7 +5,7 @@ build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/list lambda/list/main.go
 
 clean:
-	rm -rf ./bin ./vendor
+	rm -rf ./bin
 
 test: clean build
 	go test -v ./...

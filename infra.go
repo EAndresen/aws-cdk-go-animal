@@ -27,7 +27,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 				Type: "STRING",
 			},
 			BillingMode: "PAY_PER_REQUEST",
-			TableName: jsii.String("Animals"),
+			TableName:   jsii.String("Animals"),
 			SortKey: &awsdynamodb.Attribute{
 				Name: jsii.String("Name"),
 				Type: "STRING",
@@ -40,20 +40,20 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 
 	// The code that defines your stack goes here
 	createAnimalFunction := awslambda.NewFunction(stack, jsii.String("CreateAnimalFunction"), &awslambda.FunctionProps{
-		Code:        awslambda.NewAssetCode(jsii.String("../bin"), nil),
-		Handler:     jsii.String("create"),
-		Timeout:     awscdk.Duration_Seconds(jsii.Number(300)),
-		Runtime:     awslambda.Runtime_GO_1_X(),
-		Environment: &env,
+		Code:         awslambda.NewAssetCode(jsii.String("bin"), nil),
+		Handler:      jsii.String("create"),
+		Timeout:      awscdk.Duration_Seconds(jsii.Number(300)),
+		Runtime:      awslambda.Runtime_GO_1_X(),
+		Environment:  &env,
 		FunctionName: jsii.String("CreateAnimal"),
 	})
 
 	listAnimalFunction := awslambda.NewFunction(stack, jsii.String("ListAnimalFunction"), &awslambda.FunctionProps{
-		Code:        awslambda.NewAssetCode(jsii.String("../bin"), nil),
-		Handler:     jsii.String("list"),
-		Timeout:     awscdk.Duration_Seconds(jsii.Number(300)),
-		Runtime:     awslambda.Runtime_GO_1_X(),
-		Environment: &env,
+		Code:         awslambda.NewAssetCode(jsii.String("bin"), nil),
+		Handler:      jsii.String("list"),
+		Timeout:      awscdk.Duration_Seconds(jsii.Number(300)),
+		Runtime:      awslambda.Runtime_GO_1_X(),
+		Environment:  &env,
 		FunctionName: jsii.String("ListAnimals"),
 	})
 
@@ -62,7 +62,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 
 	api := awsappsync.NewGraphqlApi(stack, jsii.String("AnimalGrapghQL"), &awsappsync.GraphqlApiProps{
 		Name:   jsii.String("animals-graphql-api"),
-		Schema: awsappsync.Schema_FromAsset(jsii.String("../graphql/schema.graphql")),
+		Schema: awsappsync.Schema_FromAsset(jsii.String("graphql/schema.graphql")),
 	})
 
 	api.AddLambdaDataSource(jsii.String("ListAnimalsLambdaResolver"), listAnimalFunction, &awsappsync.DataSourceOptions{
