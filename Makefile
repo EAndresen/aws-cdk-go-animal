@@ -7,6 +7,9 @@ build:
 clean:
 	rm -rf ./bin ./vendor
 
+test: clean build
+	go test -v ./...
+
 synth: clean build
 	cdk synth
 
