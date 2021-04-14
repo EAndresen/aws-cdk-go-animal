@@ -20,6 +20,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
+	//Create DynamoDb table
 	table := awsdynamodb.NewTable(stack, jsii.String("AnimalTable"),
 		&awsdynamodb.TableProps{
 			PartitionKey: &awsdynamodb.Attribute{
@@ -38,28 +39,14 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 	env["DYNAMODB_TABLE"] = table.TableName()
 	env["DYNAMODB_AWS_REGION"] = table.Env().Region
 
-	// The code that defines your stack goes here
-	createAnimalFunction := awslambda.NewFunction(stack, jsii.String("CreateAnimalFunction"), &awslambda.FunctionProps{
-		Code:         awslambda.NewAssetCode(jsii.String("bin"), nil),
-		Handler:      jsii.String("create"),
-		Timeout:      awscdk.Duration_Seconds(jsii.Number(300)),
-		Runtime:      awslambda.Runtime_GO_1_X(),
-		Environment:  &env,
-		FunctionName: jsii.String("CreateAnimal"),
-	})
-
-	listAnimalFunction := awslambda.NewFunction(stack, jsii.String("ListAnimalFunction"), &awslambda.FunctionProps{
-		Code:         awslambda.NewAssetCode(jsii.String("bin"), nil),
-		Handler:      jsii.String("list"),
-		Timeout:      awscdk.Duration_Seconds(jsii.Number(300)),
-		Runtime:      awslambda.Runtime_GO_1_X(),
-		Environment:  &env,
-		FunctionName: jsii.String("ListAnimals"),
-	})
+	//Create Lambda functions
+	createAnimalFunction := createLambdaFunction(stack,"CreateAnimal", "create", "CreateAnimalFunction", &env)
+	listAnimalFunction := createLambdaFunction(stack,"ListAnimals", "list", "ListAnimalFunction", &env)
 
 	table.GrantReadData(listAnimalFunction)
 	table.GrantReadWriteData(createAnimalFunction)
 
+	//Create GraphQL API - AppSync
 	api := awsappsync.NewGraphqlApi(stack, jsii.String("AnimalGraphQL"), &awsappsync.GraphqlApiProps{
 		Name:   jsii.String("animals-graphql-api"),
 		Schema: awsappsync.Schema_FromAsset(jsii.String("graphql/schema.graphql")),
@@ -90,6 +77,17 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 	})
 
 	return stack
+}
+
+func createLambdaFunction( stack awscdk.Stack, name, handler, id string, env *map[string]*string) awslambda.Function {
+	return awslambda.NewFunction(stack, jsii.String(id), &awslambda.FunctionProps{
+		Environment:  env,
+		FunctionName: jsii.String(name),
+		Timeout:      awscdk.Duration_Seconds(jsii.Number(300)),
+		Code:         awslambda.NewAssetCode(jsii.String("bin"), nil),
+		Handler:      jsii.String(handler),
+		Runtime:      awslambda.Runtime_GO_1_X(),
+	})
 }
 
 func main() {
