@@ -1,4 +1,4 @@
-.PHONY: build clean deploy synth
+.PHONY: build clean test deploy synth
 
 build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/create lambda/create/main.go
