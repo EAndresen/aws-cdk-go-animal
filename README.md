@@ -1,6 +1,6 @@
 # Welcome to AWS CDK Go project-animal!
 
-This is an example project for the aws-cdk-go IoC.
+This is an example project for the aws-cdk-go IaC.
 
 **NOTICE**: Go support is still in Developer Preview. This implies that APIs may
 change while we address early feedback from the community. We would love to hear
