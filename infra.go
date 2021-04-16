@@ -83,7 +83,7 @@ func NewLambdaCronStack(scope constructs.Construct, id string, props *AwsLambdaC
 // Takes in the stacked to were the function should be deployed, name, id and handler for the function,
 // and also if the any specific environments.
 // Returns an awslambda Function.
-func createLambdaFunction( stack awscdk.Stack, name, handler, id string, env *map[string]*string) awslambda.Function {
+func createLambdaFunction(stack awscdk.Stack, name, handler, id string, env *map[string]*string) awslambda.Function {
 	return awslambda.NewFunction(stack, jsii.String(id), &awslambda.FunctionProps{
 		Environment:  env,
 		FunctionName: jsii.String(name),
